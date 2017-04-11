@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-./gradlew run
+./gradlew run -PexecArgs="['$1', '$2']"

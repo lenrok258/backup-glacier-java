@@ -1,13 +1,23 @@
-apply plugin: 'java'
+// Building
 
-apply plugin: 'application'
+apply plugin: 'java'
 
 repositories {
     jcenter()
 }
 
 dependencies {
+    compile group: 'com.amazonaws', name: 'aws-java-sdk-glacier', version: '1.11.117'
 }
+
+// Running
+
+apply plugin: 'application'
 
 mainClassName = 'kze.backup.glacier.EntryPoint'
 
+run {
+    if (project.hasProperty("execArgs")) {
+        args Eval.me(execArgs)
+    }
+}
