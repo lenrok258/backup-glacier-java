@@ -17,6 +17,10 @@ apply plugin: 'application'
 mainClassName = 'kze.backup.glacier.EntryPoint'
 
 run {
+    // Enable std in
+    standardInput = System.in
+
+    // Pass input arguments
     if (project.hasProperty("execArgs")) {
         args Eval.me(execArgs)
     }

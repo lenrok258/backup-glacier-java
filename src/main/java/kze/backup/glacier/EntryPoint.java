@@ -8,6 +8,9 @@ public class EntryPoint {
 
         System.out.println("\n\nStarted\n\n");
 
+        EntryPointArgumentParser arguments = new EntryPointArgumentParser(args);
+
+
         System.out.println(Arrays.asList(args));
 
         System.out.println("\n\nFinished\n\n");
