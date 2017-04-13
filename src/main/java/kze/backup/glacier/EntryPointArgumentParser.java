@@ -64,7 +64,7 @@ public class EntryPointArgumentParser {
 
     private void parseCmdLineArgs(String[] cmdLineArgs) {
         inputDirectoryPath = validateAndReturnInputDirectoryPath(cmdLineArgs[0]);
-        inputMonthsRange = cmdLineArgs[1];
+        inputMonthsRange = validateAndReturnInputMonthsRange(cmdLineArgs[1]);
         awsRegion = cmdLineArgs[2];
         awsGlacierVaultName = cmdLineArgs[3];
     }
@@ -81,6 +81,16 @@ public class EntryPointArgumentParser {
             exitWithErrorMessage(format("Given input path [{0}] does not exist", inputDirectoryPath));
         }
         return path;
+    }
+
+    private String validateAndReturnInputMonthsRange(String inputMonthsRange) {
+        if (inputMonthsRange == null || inputMonthsRange.length() == 0) {
+            exitWithErrorMessage("Missing parameter 'months range'");
+        }
+        if (!inputMonthsRange.matches("^[01]?[0-9]{1}-[01]?[0-9]{1}$")) {
+            exitWithErrorMessage("Incorrect parameter 'months range'");
+        }
+        return inputMonthsRange;
     }
 
     private void askUserForSecrets() {

@@ -6,4 +6,4 @@
 # 4: aws_glacier_vault_name
 
 ./install.sh
-./build/install/backup-glacier-java/bin/backup-glacier-java $1 2 3 4
+./build/install/backup-glacier-java/bin/backup-glacier-java $1 $2 3 4
