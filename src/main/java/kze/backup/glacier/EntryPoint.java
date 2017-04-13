@@ -1,19 +1,24 @@
 package kze.backup.glacier;
 
-import java.util.Arrays;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class EntryPoint {
 
     public static void main(String[] args) {
 
-        System.out.println("\n\nStarted\n\n");
+        Logger.info("Started");
 
         EntryPointArgumentParser arguments = new EntryPointArgumentParser(args);
+        Path outputPath = prepareOutputDirectory(arguments.getInputDirectoryPath());
 
+        Logger.info("Finished");
 
-        System.out.println(Arrays.asList(args));
+    }
 
-        System.out.println("\n\nFinished\n\n");
-
+    private static Path prepareOutputDirectory(Path inputDirectoryPath) {
+        Path output = Paths.get(inputDirectoryPath.toAbsolutePath().toString(), "output");
+        Logger.info("Output path computed: %s", output.toAbsolutePath());
+        return output;
     }
 }

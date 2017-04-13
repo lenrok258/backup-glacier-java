@@ -1,53 +1,29 @@
 package kze.backup.glacier;
 
+import static java.text.MessageFormat.format;
+
 import java.io.Console;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class EntryPointArgumentParser {
 
-    private String inputDirectoryPath;
+    private Path inputDirectoryPath;
     private String inputMonthsRange;
     private String awsRegion;
     private String awsGlacierVaultName;
     private String awsAccessKeyId;
     private String awsSecretAccessKey;
-    private String encriptionPassword;
+    private String encryptionPassword;
 
     public EntryPointArgumentParser(String[] cmdLineArgs) {
-        // TODO: Validate count and print help id needed
         parseCmdLineArgs(cmdLineArgs);
-        askUserForSecrets();
-        printArguments();
+        // askUserForSecrets();
+        Logger.info(this);
     }
 
-    private void parseCmdLineArgs(String[] cmdLineArgs) {
-        inputDirectoryPath = cmdLineArgs[0];
-        inputMonthsRange = cmdLineArgs[1];
-        awsRegion = cmdLineArgs[2];
-        awsGlacierVaultName = cmdLineArgs[3];
-    }
-
-    private void askUserForSecrets() {
-        Console console = System.console();
-        awsAccessKeyId = console.readLine("AWS access key id: ");
-        awsSecretAccessKey = console.readLine("AWS secret access key: ");
-        encriptionPassword = console.readLine("Encryption passpharse: ");
-    }
-
-    private void printArguments() {
-        System.out.println("\n\n--------------------------------------\n");
-        System.out.println("inputDirectoryPath: " + inputDirectoryPath);
-        System.out.println("inputMonthsRange: " + inputMonthsRange);
-        System.out.println("awsRegion: " + awsRegion);
-        System.out.println("awsGlacierVaultName: " + awsGlacierVaultName);
-
-        //TODO: Remove the ones below
-        System.out.println("awsAccessKeyId: " + awsAccessKeyId);
-        System.out.println("awsSecretAccessKey: " + awsSecretAccessKey);
-        System.out.println("encriptionPassword: " + encriptionPassword);
-        System.out.println("\n--------------------------------------\n\n");
-    }
-
-    public String getInputDirectoryPath() {
+    public Path getInputDirectoryPath() {
         return inputDirectoryPath;
     }
 
@@ -71,7 +47,51 @@ public class EntryPointArgumentParser {
         return awsSecretAccessKey;
     }
 
-    public String getEncriptionPassword() {
-        return encriptionPassword;
+    public String getEncryptionPassword() {
+        return encryptionPassword;
+    }
+
+    public String toString() {
+        return String.format("Program parameters: [%s], [%s], [%s], [%s], [%s], [%s], [%s]",
+                inputDirectoryPath,
+                inputMonthsRange,
+                awsRegion,
+                awsGlacierVaultName,
+                awsAccessKeyId,
+                awsSecretAccessKey,
+                encryptionPassword);
+    }
+
+    private void parseCmdLineArgs(String[] cmdLineArgs) {
+        inputDirectoryPath = validateAndReturnInputDirectoryPath(cmdLineArgs[0]);
+        inputMonthsRange = cmdLineArgs[1];
+        awsRegion = cmdLineArgs[2];
+        awsGlacierVaultName = cmdLineArgs[3];
+    }
+
+    private Path validateAndReturnInputDirectoryPath(String inputDirectoryPath) {
+        if (inputDirectoryPath == null || inputDirectoryPath.isEmpty()) {
+            exitWithErrorMessage("Missing argument 'input directory'");
+        }
+        Path path = Paths.get(inputDirectoryPath);
+        if (!Files.isDirectory(path)) {
+            exitWithErrorMessage(format("Given input path [{0}] in not a directory", inputDirectoryPath));
+        }
+        if (Files.notExists(path)) {
+            exitWithErrorMessage(format("Given input path [{0}] does not exist", inputDirectoryPath));
+        }
+        return path;
+    }
+
+    private void askUserForSecrets() {
+        Console console = System.console();
+        awsAccessKeyId = console.readLine("AWS access key id: ");
+        awsSecretAccessKey = console.readLine("AWS secret access key: ");
+        encryptionPassword = console.readLine("Encryption password: ");
+    }
+
+    private void exitWithErrorMessage(String errorMessage) {
+        Logger.error(errorMessage);
+        System.exit(-1);
     }
 }
