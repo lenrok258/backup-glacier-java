@@ -1,6 +1,7 @@
 package kze.backup.glacier;
 
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,8 +30,11 @@ public class EntryPoint {
         Path output = Paths.get(inputDirectoryPath.toAbsolutePath().toString(), "output");
         try {
             Files.createDirectory(output);
+        } catch (FileAlreadyExistsException e) {
+            Logger.info("Directory [%s] already exists", inputDirectoryPath);
         } catch (IOException e) {
             Logger.error("Unable to create output directory [%s]", e, inputDirectoryPath);
+            System.exit(-1);
         }
         Logger.info("Output path computed and created: %s", output.toAbsolutePath());
         return output;

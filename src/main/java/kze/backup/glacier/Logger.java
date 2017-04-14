@@ -1,5 +1,7 @@
 package kze.backup.glacier;
 
+import java.util.Date;
+
 public class Logger {
 
     public static void info(Object message, Object... args) {
@@ -18,8 +20,8 @@ public class Logger {
     }
 
     private static String formatMessage(String level, Object message, Object... ars) {
-        String levelPrefix = String.format("[%s] ", level);
-        return String.format(levelPrefix + message, ars);
+        String levelPrefixAndTime = String.format("[%1$tF %1$tT] [%2$s] ", new Date(), level);
+        return String.format(levelPrefixAndTime + message, ars);
     }
 
 }
