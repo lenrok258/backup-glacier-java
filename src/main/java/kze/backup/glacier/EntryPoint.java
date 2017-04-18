@@ -5,7 +5,6 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.List;
 
 public class EntryPoint {
@@ -20,7 +19,10 @@ public class EntryPoint {
 
         Path outputPath = prepareOutputDirectory(arguments.getInputDirectoryPath());
 
-        List<Path> pathsToBackup = computeDirectoriesToBackup(arguments.getInputDirectoryPath(), outputPath, FILENAME_AWS_ARCHIVE_INFO);
+        List<Path> pathsToBackup = new DirectoriesToBackup(
+                arguments.getInputDirectoryPath(),
+                arguments.getInputMonthsRange(),
+                FILENAME_AWS_ARCHIVE_INFO).getPathsList();
 
         Logger.info("Finished");
 
@@ -40,7 +42,4 @@ public class EntryPoint {
         return output;
     }
 
-    private static List<Path> computeDirectoriesToBackup(Path inputDirectoryPath, Path outputPath, String filenameAwsArchiveInfo) {
-        return Collections.emptyList();
-    }
 }
