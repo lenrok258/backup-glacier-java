@@ -1,6 +1,8 @@
 package kze.backup.glacier;
 
 import static java.text.MessageFormat.format;
+import static kze.backup.glacier.Logger.info;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.Console;
 import java.nio.file.Files;
@@ -20,7 +22,7 @@ public class EntryPointArgumentParser {
     public EntryPointArgumentParser(String[] cmdLineArgs) {
         parseCmdLineArgs(cmdLineArgs);
         // askUserForSecrets();
-        Logger.info(this);
+        info(this);
     }
 
     public Path getInputDirectoryPath() {
@@ -70,7 +72,7 @@ public class EntryPointArgumentParser {
     }
 
     private Path validateAndReturnInputDirectoryPath(String inputDirectoryPath) {
-        if (inputDirectoryPath == null || inputDirectoryPath.isEmpty()) {
+        if (isEmpty(inputDirectoryPath)) {
             exitWithErrorMessage("Missing argument 'input directory'");
         }
         Path path = Paths.get(inputDirectoryPath);
@@ -84,7 +86,7 @@ public class EntryPointArgumentParser {
     }
 
     private String validateAndReturnInputMonthsRange(String inputMonthsRange) {
-        if (inputMonthsRange == null || inputMonthsRange.length() == 0) {
+        if (isEmpty(inputMonthsRange)) {
             exitWithErrorMessage("Missing parameter 'months range'");
         }
         if (!inputMonthsRange.matches("^[01]?[0-9]{1}-[01]?[0-9]{1}$")) {

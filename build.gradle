@@ -8,6 +8,8 @@ repositories {
 
 dependencies {
     compile group: 'com.amazonaws', name: 'aws-java-sdk-glacier', version: '1.11.117'
+    compile group: 'commons-collections', name: 'commons-collections', version: '3.2.1'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
 }
 
 // Running

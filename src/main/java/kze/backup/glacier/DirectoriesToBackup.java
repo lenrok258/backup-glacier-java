@@ -2,6 +2,7 @@ package kze.backup.glacier;
 
 import static java.lang.Integer.parseInt;
 import static java.util.stream.Collectors.toList;
+import static kze.backup.glacier.Logger.info;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -26,10 +27,10 @@ public class DirectoriesToBackup {
 
     public List<Path> getPathsList() {
         List<Integer> monthsNumbers = expandMonthsRangeToList(monthsRange);
-        Logger.info("[%s] Given months numbers to backup: %s", monthsNumbers.size(), monthsNumbers);
+        info("[%s] Given months numbers to backup: %s", monthsNumbers.size(), monthsNumbers);
 
         List<Path> monthsPaths = listMonthsDirectories(monthsNumbers);
-        Logger.info("[%s] Computed months paths to backup: %s", monthsPaths.size(), monthsPaths.toString());
+        info("[%s] Computed months paths to backup: %s", monthsPaths.size(), monthsPaths.toString());
 
         return monthsPaths;
     }
@@ -61,7 +62,7 @@ public class DirectoriesToBackup {
                 .reduce((m, n) -> m + "|" + n)
                 .map(m -> ".*(" + m + ").*")
                 .get();
-        Logger.info("Computed months directories regexp %s", regexp);
+        info("Computed months directories regexp %s", regexp);
         return regexp;
     }
 
@@ -74,7 +75,7 @@ public class DirectoriesToBackup {
         boolean notYetBackedUp = Files.notExists(backupInfoFilePath);
 
         if (!notYetBackedUp) {
-            Logger.info("Directory %s was already backed up. Skipping.", dir);
+            info("Directory %s was already backed up. Skipping.", dir);
         }
         return notYetBackedUp;
     }
