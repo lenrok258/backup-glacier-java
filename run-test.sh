@@ -5,5 +5,4 @@
 # 3: aws_region
 # 4: aws_glacier_vault_name
 
-./install.sh
-./build/install/backup-glacier-java/bin/backup-glacier-java $1 $2 $3 $4
+./run.sh test-data/2016 1-6 west-1 test
