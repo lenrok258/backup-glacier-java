@@ -1,7 +1,7 @@
 package kze.backup.glacier;
 
 import static kze.backup.glacier.Logger.info;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -9,6 +9,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+
+import kze.backup.glacier.zip.ZipArchive;
+import kze.backup.glacier.zip.ZipService;
 
 public class EntryPoint {
 
@@ -36,6 +39,8 @@ public class EntryPoint {
         }
 
         // Zip
+        ZipService zipService = new ZipService(outputPath);
+        List<ZipArchive> zipArchives = zipService.zipPaths(pathsToBackup);
 
         // Encrypt
 
