@@ -10,6 +10,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import kze.backup.glacier.encrypt.EncryptService;
+import kze.backup.glacier.encrypt.EncryptedArchive;
 import kze.backup.glacier.zip.ZipArchive;
 import kze.backup.glacier.zip.ZipService;
 
@@ -43,6 +45,8 @@ public class EntryPoint {
         List<ZipArchive> zipArchives = zipService.zipPaths(pathsToBackup);
 
         // Encrypt
+        EncryptService encryptService = new EncryptService(outputPath);
+        List<EncryptedArchive> encryptedArchives = encryptService.encZipArchives(zipArchives);
 
         // Verify encrypted files
 
