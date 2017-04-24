@@ -3,7 +3,12 @@ package kze.backup.glacier.zip;
 import static java.util.stream.Collectors.toList;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+
+import org.zeroturnaround.zip.ZipUtil;
+
+import kze.backup.glacier.Logger;
 
 public class ZipService {
 
@@ -21,10 +26,17 @@ public class ZipService {
                 .collect(toList());
     }
 
-    private ZipArchive createArchive(Path inputPath) {
+    private ZipArchive createArchive(Path pathToZip) {
+        Path zipPath = computeOutputZipPath(pathToZip);
+        ZipUtil.pack(pathToZip.toFile(), zipPath.toFile());
+        Logger.info("Zip file created [%s]", zipPath);
+        return new ZipArchive(pathToZip, zipPath);
+    }
 
-
-
-        return new ZipArchive(inputPath, null);
+    private Path computeOutputZipPath(Path pathToZip) {
+        Path path = Paths.get(outputPath.toAbsolutePath().toString(),
+                pathToZip.getFileName().toString() + FILENAME_POSTFIX_ZIP);
+        Logger.info("Computed zip path [%s]", path);
+        return path;
     }
 }
