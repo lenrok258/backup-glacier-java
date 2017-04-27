@@ -1,0 +1,21 @@
+----------------------------------------------------------------------
+
+----------------------------------------------------------------------
+
+
+----------------------------------------------------------------------
+JCE (Java Cryptography Extension) is needed for strong password enc
+----------------------------------------------------------------------
+Not having it installed will produce:
+java.security.InvalidKeyException: Illegal key size
+
+Extract the jar files from the zip and save them in ${java.home}/jre/lib/security/.
+
+solution source: http://stackoverflow.com/questions/6481627/java-security-illegal-key-size-or-default-parameters
+
+JCE 7: http://www.oracle.com/technetwork/java/javase/downloads/jce-7-download-432124.html
+JCE 8: http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html
+
+
+
+
