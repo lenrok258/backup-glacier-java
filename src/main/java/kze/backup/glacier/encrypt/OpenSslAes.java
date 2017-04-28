@@ -1,10 +1,8 @@
 package kze.backup.glacier.encrypt;
 
-import static java.nio.charset.StandardCharsets.US_ASCII;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -15,13 +13,14 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
+import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /*
-    AES uses 128-bit blocks
-    IV (Init Vector) in CBC algorithm has to be of the size of single block
+    Notes:
+    1. Key and IV generation is compatible with OpenSSL implementation
+    2. AES uses 128-bit blocks
+    3. IV (Init Vector) in CBC algorithm has to be of the size of single block
 */
 
 // TODO: Switch to BouncyCastle's OpenSSLPBEParametersGenerator
@@ -29,18 +28,6 @@ public class OpenSslAes {
 
     private static final String SALTED_STR = "Salted__";
     private static final byte[] SALTED_MAGIC = SALTED_STR.getBytes(US_ASCII);
-
-/*    public String encrypt(String password, String textToEncode) throws Exception {
-        final byte[] inBytes = textToEncode.getBytes(UTF_8);
-        byte[] outBytes = encrypt(password, inBytes, true);
-        return Base64.getEncoder().encodeToString(outBytes);
-    }*/
-
-    public String decrypt(String password, String textToDecrypt) throws Exception {
-        final byte[] inBytes = Base64.getDecoder().decode(textToDecrypt);
-        byte[] openBytes = decrypt(password, inBytes);
-        return new String(openBytes, UTF_8);
-    }
 
     public String encrypt(String password, String textToEncode) throws Exception {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(textToEncode.getBytes(UTF_8));
@@ -50,52 +37,66 @@ public class OpenSslAes {
         return new String(Base64.getEncoder().encode(outBytes), UTF_8);
     }
 
-/*    public String encrypt(String password, String textToEncode) throws Exception {
-        final byte[] inBytes = textToEncode.getBytes(UTF_8);
-        byte[] outBytes = encrypt(password, inBytes, true);
-        return Base64.getEncoder().encodeToString(outBytes);
-    }*/
-
     public void encrypt(String password, InputStream inputStream, OutputStream outputStream) throws Exception {
         final byte[] salt = (new SecureRandom()).generateSeed(8);
         final Cipher cipher = getCipher(password, salt, Cipher.ENCRYPT_MODE);
 
         // OpenSSL specific salt at the beginning of the file
-        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
-        bufferedOutputStream.write(array_concat(SALTED_MAGIC, salt));
+        outputStream.write(SALTED_MAGIC);
+        outputStream.write(salt);
 
         int chunkSize = cipher.getBlockSize() * 8 * 1024;
         byte[] input = new byte[chunkSize];
-        BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
         int bytesRead;
-        while ((bytesRead = bufferedInputStream.read(input, 0, input.length)) != -1) {
+        while ((bytesRead = inputStream.read(input, 0, input.length)) != -1) {
             if (bytesRead < chunkSize) {
-                bufferedOutputStream.write(cipher.doFinal(input));
+                outputStream.write(cipher.doFinal(input, 0, bytesRead));
             } else {
-                bufferedOutputStream.write(cipher.update(input));
+                outputStream.write(cipher.update(input, 0, bytesRead));
             }
         }
+        inputStream.close();
+        outputStream.flush();
+        outputStream.close();
     }
 
-/*    private byte[] encrypt(String password, byte[] bytesToEncode, boolean isFirstBlock) throws Exception {
-        final byte[] salt = (new SecureRandom()).generateSeed(8);
-        final Cipher cipher = getCipher(password, salt, Cipher.ENCRYPT_MODE);
-        byte[] data = cipher.doFinal(bytesToEncode);
-        if (isFirstBlock) {
-            return array_concat(array_concat(SALTED_MAGIC, salt), data);
-        } else {
-            return data;
-        }
-    }*/
+    public String decrypt(String password, String textToDecryptBase64) throws Exception {
+        final byte[] inBytes = Base64.getDecoder().decode(textToDecryptBase64);
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(inBytes);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        decrypt(password, inputStream, outputStream);
+        return new String(outputStream.toByteArray(), UTF_8);
+    }
 
-    private byte[] decrypt(String password, byte[] bytesToDecode) throws Exception {
-        final byte[] shouldBeMagic = Arrays.copyOfRange(bytesToDecode, 0, SALTED_MAGIC.length);
-        if (!Arrays.equals(shouldBeMagic, SALTED_MAGIC)) {
+    private void decrypt(String password, InputStream inputStream, OutputStream outputStream) throws Exception {
+        // Read magic string 'Salted__'
+        byte[] magicSaltBytes = new byte[SALTED_MAGIC.length];
+        inputStream.read(magicSaltBytes);
+        if (!Arrays.equals(magicSaltBytes, SALTED_MAGIC)) {
             throw new IllegalArgumentException("Initial bytes from input do not match OpenSSL SALTED_MAGIC salt value.");
         }
-        final byte[] salt = Arrays.copyOfRange(bytesToDecode, SALTED_MAGIC.length, SALTED_MAGIC.length + 8);
-        final Cipher cipher = getCipher(password, salt, Cipher.DECRYPT_MODE);
-        return cipher.doFinal(bytesToDecode, 16, bytesToDecode.length - 16);
+
+        // Read salt value
+        byte[] saltValue = new byte[8];
+        inputStream.read(saltValue);
+
+        // Decrypt
+        final Cipher cipher = getCipher(password, saltValue, Cipher.DECRYPT_MODE);
+        int chunkSize = cipher.getBlockSize() * 8 * 1024;
+        byte[] input = new byte[chunkSize];
+        int bytesRead;
+        while ((bytesRead = inputStream.read(input, 0, input.length)) != -1) {
+            if (bytesRead < chunkSize) {
+                outputStream.write(cipher.doFinal(input, 0, bytesRead));
+            } else {
+                outputStream.write(cipher.update(input, 0, bytesRead));
+            }
+        }
+
+        // Cleanup
+        inputStream.close();
+        outputStream.flush();
+        outputStream.close();
     }
 
     private byte[] generateKeyAnIV(byte[] passAndSalt) throws NoSuchAlgorithmException {
@@ -131,6 +132,9 @@ public class OpenSslAes {
 
     public static void main(String[] args) throws Exception {
         OpenSslAes aes = new OpenSslAes();
-        System.out.println(aes.encrypt("1234567890", "TEST"));
+        String cypherTxt = aes.encrypt("1234567890", "TEST");
+        System.out.println(cypherTxt);
+        String openTxt = aes.decrypt("1234567890", cypherTxt);
+        System.out.println(openTxt);
     }
 }
