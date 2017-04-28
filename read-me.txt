@@ -4,6 +4,12 @@
 
 
 ----------------------------------------------------------------------
+openssl command line - key and IV generation
+----------------------------------------------------------------------
+To check if my code generates the same key and IV as openssl command line:
+openssl enc -aes-256-cbc -k {{INPUT_PASSWORD}} -P -md md5 -S {{INPUT_SALT}
+
+----------------------------------------------------------------------
 JCE (Java Cryptography Extension) is needed for strong password enc
 ----------------------------------------------------------------------
 Not having it installed will produce:

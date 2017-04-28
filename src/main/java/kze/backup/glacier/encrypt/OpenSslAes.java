@@ -3,35 +3,36 @@ package kze.backup.glacier.encrypt;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+/*
+    AES uses 128-bit blocks
+    IV (Init Vector) in CBC algorithm has to be of the size of single block
+*/
+
+// TODO: Switch to BouncyCastle's OpenSSLPBEParametersGenerator
 public class OpenSslAes {
 
     private static final String SALTED_STR = "Salted__";
     private static final byte[] SALTED_MAGIC = SALTED_STR.getBytes(US_ASCII);
 
-    public String encrypt(String password, String clearText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+    public String encrypt(String password, String clearText) throws Exception {
         final byte[] pass = password.getBytes(US_ASCII);
+
         final byte[] salt = (new SecureRandom()).generateSeed(8);
+
         final byte[] inBytes = clearText.getBytes(UTF_8);
 
         final byte[] passAndSalt = array_concat(pass, salt);
-        byte[] hash = new byte[0];
-        byte[] keyAndIv = new byte[0];
-        keyAndIv = generateKeyAnIV(passAndSalt, hash, keyAndIv);
+        byte[] keyAndIv = generateKeyAnIV(passAndSalt);
 
         final byte[] keyValue = Arrays.copyOfRange(keyAndIv, 0, 32);
         final byte[] iv = Arrays.copyOfRange(keyAndIv, 32, 48);
@@ -44,7 +45,7 @@ public class OpenSslAes {
         return Base64.getEncoder().encodeToString(data);
     }
 
-    public String decrypt(String password, String source) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+    public String decrypt(String password, String source) throws Exception {
         final byte[] pass = password.getBytes(US_ASCII);
 
         final byte[] inBytes = Base64.getDecoder().decode(source);
@@ -58,9 +59,7 @@ public class OpenSslAes {
 
         final byte[] passAndSalt = array_concat(pass, salt);
 
-        byte[] hash = new byte[0];
-        byte[] keyAndIv = new byte[0];
-        keyAndIv = generateKeyAnIV(passAndSalt, hash, keyAndIv);
+        byte[] keyAndIv = generateKeyAnIV(passAndSalt);
 
         final byte[] keyValue = Arrays.copyOfRange(keyAndIv, 0, 32);
         final SecretKeySpec key = new SecretKeySpec(keyValue, "AES");
@@ -73,7 +72,9 @@ public class OpenSslAes {
         return new String(clear, UTF_8);
     }
 
-    private byte[] generateKeyAnIV(byte[] passAndSalt, byte[] hash, byte[] keyAndIv) throws NoSuchAlgorithmException {
+    private byte[] generateKeyAnIV(byte[] passAndSalt) throws NoSuchAlgorithmException {
+        byte[] hash = new byte[0];
+        byte[] keyAndIv = new byte[0];
         for (int i = 0; i < 3 && keyAndIv.length < 48; i++) {
             final byte[] hashData = array_concat(hash, passAndSalt);
             final MessageDigest md = MessageDigest.getInstance("MD5");
@@ -89,15 +90,4 @@ public class OpenSslAes {
         System.arraycopy(b, 0, c, a.length, b.length);
         return c;
     }
-
-    public static void main(String[] args) throws NoSuchPaddingException, InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
-        System.out.println(new OpenSslAes().encrypt("1234567890123456789012345678901234567890123456789012345678901234", "TEST"));
-        System.out.println(new OpenSslAes().encrypt("123456789012345678901234567890123456789012345678901234567890123", "TEST"));
-        System.out.println(new OpenSslAes().encrypt("12345678901234567890123456789012345678901234567890123456789012", "TEST"));
-        System.out.println(new OpenSslAes().encrypt("1234567890123456789012345678901234567890123456789012345678901", "TEST"));
-        System.out.println(new OpenSslAes().encrypt("123456789012345678901234567890123456789012345678901234567890", "TEST"));
-        System.out.println(new OpenSslAes().encrypt("12345678901234567890123456789012", "TEST"));
-        System.out.println(new OpenSslAes().decrypt("1234567890123456789012345678901234567890123456789012345678901234", "U2FsdGVkX1/mmfpsp1mXx9M88rhzia/vqr2j4G9UFZ8="));
-    }
-
 }
