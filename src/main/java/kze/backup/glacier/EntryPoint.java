@@ -1,7 +1,9 @@
 package kze.backup.glacier;
 
-import static kze.backup.glacier.Logger.info;
-import static org.apache.commons.collections4.CollectionUtils.isEmpty;
+import kze.backup.glacier.encrypt.EncryptService;
+import kze.backup.glacier.encrypt.EncryptedArchive;
+import kze.backup.glacier.zip.ZipArchive;
+import kze.backup.glacier.zip.ZipService;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -10,10 +12,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import kze.backup.glacier.encrypt.EncryptService;
-import kze.backup.glacier.encrypt.EncryptedArchive;
-import kze.backup.glacier.zip.ZipArchive;
-import kze.backup.glacier.zip.ZipService;
+import static kze.backup.glacier.Logger.info;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 
 public class EntryPoint {
 
@@ -45,8 +45,9 @@ public class EntryPoint {
         List<ZipArchive> zipArchives = zipService.zipPaths(pathsToBackup);
 
         // Encrypt
-        EncryptService encryptService = new EncryptService(outputPath);
-        List<EncryptedArchive> encryptedArchives = encryptService.encZipArchives(zipArchives);
+        EncryptService encryptService = new EncryptService();
+        List<EncryptedArchive> encryptedArchives = encryptService.encZipArchives(
+                zipArchives, arguments.getEncryptionPassword());
 
         // Verify encrypted files
 

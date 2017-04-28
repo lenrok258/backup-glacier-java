@@ -18,7 +18,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 /*
     Notes:
-    1. Key and IV generation is compatible with OpenSSL implementation
+    1. Key and IV generation is compliant with OpenSSL implementation
     2. AES uses 128-bit blocks
     3. IV (Init Vector) in CBC algorithm has to be of the size of single block
 */
@@ -130,11 +130,4 @@ public class OpenSslAes {
         return c;
     }
 
-    public static void main(String[] args) throws Exception {
-        OpenSslAes aes = new OpenSslAes();
-        String cypherTxt = aes.encrypt("1234567890", "TEST");
-        System.out.println(cypherTxt);
-        String openTxt = aes.decrypt("1234567890", cypherTxt);
-        System.out.println(openTxt);
-    }
 }

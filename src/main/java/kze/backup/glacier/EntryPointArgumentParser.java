@@ -1,13 +1,13 @@
 package kze.backup.glacier;
 
-import static java.text.MessageFormat.format;
-import static kze.backup.glacier.Logger.info;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
 import java.io.Console;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import static java.text.MessageFormat.format;
+import static kze.backup.glacier.Logger.info;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 public class EntryPointArgumentParser {
 
@@ -21,7 +21,7 @@ public class EntryPointArgumentParser {
 
     public EntryPointArgumentParser(String[] cmdLineArgs) {
         parseCmdLineArgs(cmdLineArgs);
-        // askUserForSecrets();
+        askUserForSecrets();
         info(this);
     }
 
