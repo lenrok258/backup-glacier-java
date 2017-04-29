@@ -48,13 +48,17 @@ public class OpenSslAes {
         int chunkSize = cipher.getBlockSize() * 8 * 1024;
         byte[] input = new byte[chunkSize];
         int bytesRead;
+        System.out.print("Encrypting .");
         while ((bytesRead = inputStream.read(input, 0, input.length)) != -1) {
             if (bytesRead < chunkSize) {
                 outputStream.write(cipher.doFinal(input, 0, bytesRead));
             } else {
                 outputStream.write(cipher.update(input, 0, bytesRead));
             }
+            System.out.print(".");
         }
+        System.out.println("");
+
         inputStream.close();
         outputStream.flush();
         outputStream.close();
