@@ -4,7 +4,7 @@ import java.util.Date;
 
 public class Logger {
 
-    private static final String PROGRESS_TILE = "*";
+    private static final String PROGRESS_TILE = ".";
 
     public static void info(Object message, Object... args) {
         String messageFormatted = formatMessage("INFO", message, args);

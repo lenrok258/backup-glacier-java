@@ -13,7 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static kze.backup.glacier.Logger.*;
+import static kze.backup.glacier.Logger.error;
 import static kze.backup.glacier.Logger.info;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 
@@ -22,7 +22,7 @@ public class EntryPoint {
     public static final String FILENAME_AWS_ARCHIVE_INFO = "aws-archive-info.json";
     public static final String DIR_NAME_OUTPUT = "output";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         info("Started");
 
@@ -58,6 +58,7 @@ public class EntryPoint {
         // Upload to AWS Glacier
 
         // Clean up
+        Files.deleteIfExists(outputPath);
 
         info("Finished");
 

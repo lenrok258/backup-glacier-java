@@ -47,7 +47,7 @@ public class OpenSslAes {
         outputStream.write(SALTED_MAGIC);
         outputStream.write(salt);
 
-        int chunkSize = cipher.getBlockSize() * 8 * 1024;
+        int chunkSize = cipher.getBlockSize() * 8 * 1024 * 1024;
         byte[] input = new byte[chunkSize];
         int bytesRead;
         Logger.progressStart("Encrypting");
@@ -88,7 +88,7 @@ public class OpenSslAes {
 
         // Decrypt
         final Cipher cipher = getCipher(password, saltValue, Cipher.DECRYPT_MODE);
-        int chunkSize = cipher.getBlockSize() * 8 * 1024;
+        int chunkSize = cipher.getBlockSize() * 8 * 1024 * 1024;
         byte[] input = new byte[chunkSize];
         int bytesRead;
         Logger.progressStart("Decrypting");
