@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import static kze.backup.glacier.Logger.*;
 import static kze.backup.glacier.Logger.info;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 
@@ -69,7 +70,7 @@ public class EntryPoint {
         } catch (FileAlreadyExistsException e) {
             info("Output directory [%s] already exists", output);
         } catch (IOException e) {
-            Logger.error("Unable to create output directory [%s]", e, output);
+            error("Unable to create output directory [%s]", e, output);
             System.exit(-1);
         }
         info("Output path computed and created: %s", output.toAbsolutePath());

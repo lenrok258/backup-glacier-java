@@ -1,5 +1,7 @@
 package kze.backup.glacier.encrypt;
 
+import kze.backup.glacier.Logger;
+
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -48,16 +50,16 @@ public class OpenSslAes {
         int chunkSize = cipher.getBlockSize() * 8 * 1024;
         byte[] input = new byte[chunkSize];
         int bytesRead;
-        System.out.print("Encrypting .");
+        Logger.progressStart("Encrypting");
         while ((bytesRead = inputStream.read(input, 0, input.length)) != -1) {
             if (bytesRead < chunkSize) {
                 outputStream.write(cipher.doFinal(input, 0, bytesRead));
             } else {
                 outputStream.write(cipher.update(input, 0, bytesRead));
             }
-            System.out.print(".");
+            Logger.progressContinue();
         }
-        System.out.println("");
+        Logger.progressFinish();
 
         inputStream.close();
         outputStream.flush();
@@ -89,16 +91,16 @@ public class OpenSslAes {
         int chunkSize = cipher.getBlockSize() * 8 * 1024;
         byte[] input = new byte[chunkSize];
         int bytesRead;
-        System.out.print("Decrypting .");
+        Logger.progressStart("Decrypting");
         while ((bytesRead = inputStream.read(input, 0, input.length)) != -1) {
             if (bytesRead < chunkSize) {
                 outputStream.write(cipher.doFinal(input, 0, bytesRead));
             } else {
                 outputStream.write(cipher.update(input, 0, bytesRead));
             }
-            System.out.print(".");
+            Logger.progressContinue();
         }
-        System.out.println("");
+        Logger.progressFinish();
 
         // Cleanup
         inputStream.close();

@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
+import static kze.backup.glacier.Logger.*;
 
 public class EncryptService {
 
@@ -32,11 +33,11 @@ public class EncryptService {
         try {
             inputStream = new FileInputStream(zipPath.toFile());
             outputStream = new FileOutputStream(encArchivePath.toFile());
-            Logger.info("About to encypt file [%s]", zipPath.toAbsolutePath());
+            info("About to encypt file [%s]", zipPath.toAbsolutePath());
             aes.encrypt(password, inputStream, outputStream);
-            Logger.info("File encrypted [%s]", encArchivePath.toAbsolutePath());
+            info("File encrypted [%s]", encArchivePath.toAbsolutePath());
         } catch (Exception e) {
-            Logger.error("Unable to encrypt zip=[%s]", e, zipArchive);
+            error("Unable to encrypt zip=[%s]", e, zipArchive);
             System.exit(-1);
         }
 

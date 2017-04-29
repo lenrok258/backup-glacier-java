@@ -1,6 +1,7 @@
 package kze.backup.glacier.zip;
 
 import static java.util.stream.Collectors.toList;
+import static kze.backup.glacier.Logger.*;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,14 +30,14 @@ public class ZipService {
     private ZipArchive createArchive(Path pathToZip) {
         Path zipPath = computeOutputZipPath(pathToZip);
         ZipUtil.pack(pathToZip.toFile(), zipPath.toFile());
-        Logger.info("Zip file created [%s]", zipPath);
+        info("Zip file created [%s]", zipPath);
         return new ZipArchive(pathToZip, zipPath);
     }
 
     private Path computeOutputZipPath(Path pathToZip) {
         Path path = Paths.get(outputPath.toAbsolutePath().toString(),
                 pathToZip.getFileName().toString() + FILENAME_POSTFIX_ZIP);
-        Logger.info("Computed zip path [%s]", path);
+        info("Computed zip path [%s]", path);
         return path;
     }
 }
