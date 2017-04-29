@@ -21,4 +21,12 @@ public class EncryptedArchive {
     public Path getEncryptedArchivePath() {
         return encryptedArchivePath;
     }
+
+    @Override
+    public String toString() {
+        return "EncryptedArchive{" +
+                "zipArchive=" + zipArchive +
+                ", encryptedArchivePath=" + encryptedArchivePath +
+                '}';
+    }
 }

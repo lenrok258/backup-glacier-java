@@ -2,6 +2,7 @@ package kze.backup.glacier;
 
 import kze.backup.glacier.encrypt.EncryptService;
 import kze.backup.glacier.encrypt.EncryptedArchive;
+import kze.backup.glacier.encrypt.VerifierService;
 import kze.backup.glacier.zip.ZipArchive;
 import kze.backup.glacier.zip.ZipService;
 
@@ -46,10 +47,12 @@ public class EntryPoint {
 
         // Encrypt
         EncryptService encryptService = new EncryptService();
-        List<EncryptedArchive> encryptedArchives = encryptService.encZipArchives(
-                zipArchives, arguments.getEncryptionPassword());
+        List<EncryptedArchive> encArchives = encryptService.encZipArchives(
+                arguments.getEncryptionPassword(), zipArchives);
 
         // Verify encrypted files
+        VerifierService verifierService = new VerifierService();
+        verifierService.verifyAll(arguments.getEncryptionPassword(), encArchives);
 
         // Upload to AWS Glacier
 

@@ -17,7 +17,7 @@ public class EncryptService {
 
     private OpenSslAes aes = new OpenSslAes();
 
-    public List<EncryptedArchive> encZipArchives(List<ZipArchive> zipArchives, String password) {
+    public List<EncryptedArchive> encZipArchives(String password, List<ZipArchive> zipArchives) {
         return zipArchives.stream()
                 .map(zipArchive -> encZipArchive(zipArchive, password))
                 .collect(toList());
