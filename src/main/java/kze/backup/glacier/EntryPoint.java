@@ -1,10 +1,12 @@
 package kze.backup.glacier;
 
+import kze.backup.glacier.aws.GlacierService;
 import kze.backup.glacier.encrypt.EncryptService;
 import kze.backup.glacier.encrypt.EncryptedArchive;
 import kze.backup.glacier.encrypt.VerifierService;
 import kze.backup.glacier.zip.ZipArchive;
 import kze.backup.glacier.zip.ZipService;
+import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -23,7 +25,6 @@ public class EntryPoint {
     public static final String DIR_NAME_OUTPUT = "output";
 
     public static void main(String[] args) throws IOException {
-
         info("Started");
 
         // Arguments
@@ -56,12 +57,18 @@ public class EntryPoint {
         verifierService.verifyAll(arguments.getEncryptionPassword(), encArchives);
 
         // Upload to AWS Glacier
+        GlacierService glacierService = new GlacierService(arguments.getAwsAccessKeyId(),
+                arguments.getAwsSecretAccessKey(),
+                arguments.getAwsRegion(),
+                arguments.getAwsGlacierVaultName(),
+                FILENAME_AWS_ARCHIVE_INFO);
+        glacierService.uploadAll(encArchives);
 
         // Clean up
-        Files.deleteIfExists(outputPath);
+        FileUtils.forceDelete(outputPath.toFile());
+        info("Output directory [%s] deleted", outputPath);
 
         info("Finished");
-
     }
 
     private static Path prepareOutputDirectory(Path inputDirectoryPath) {

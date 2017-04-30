@@ -1,6 +1,5 @@
 package kze.backup.glacier.encrypt;
 
-import kze.backup.glacier.Logger;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.InputStream;
@@ -28,15 +27,15 @@ public class VerifierService {
     }
 
     private void verify(String password, EncryptedArchive encryptedArchive) {
-        info("About to verify file=[%s]", encryptedArchive.getEncryptedArchivePath());
-        Path encPath = encryptedArchive.getEncryptedArchivePath();
+        info("About to verify file=[%s]", encryptedArchive.getPath());
+        Path encPath = encryptedArchive.getPath();
         Path decPath = decrypt(password, encPath);
         boolean theSame = checkIfTheSame(encryptedArchive.getZipArchive().getZipPath(), decPath);
         if (!theSame) {
             error("Varying file failed. Decrypted file=[%s] is not the same as the one before encryption=[%s]", decPath, encPath);
             System.exit(-1);
         }
-        info("File=[%s] verified", encryptedArchive.getEncryptedArchivePath());
+        info("File=[%s] verified", encryptedArchive.getPath());
     }
 
     private Path decrypt(String password, Path encPath) {

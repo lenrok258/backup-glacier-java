@@ -7,26 +7,30 @@ import java.nio.file.Path;
 public class EncryptedArchive {
 
     private ZipArchive zipArchive;
-    private Path encryptedArchivePath;
+    private Path path;
 
-    public EncryptedArchive(ZipArchive zipArchive, Path encryptedArchivePath) {
+    public EncryptedArchive(ZipArchive zipArchive, Path path) {
         this.zipArchive = zipArchive;
-        this.encryptedArchivePath = encryptedArchivePath;
+        this.path = path;
     }
 
     public ZipArchive getZipArchive() {
         return zipArchive;
     }
 
-    public Path getEncryptedArchivePath() {
-        return encryptedArchivePath;
+    public Path getPath() {
+        return path;
+    }
+
+    public String computeDescription() {
+        return path.getFileName().toString();
     }
 
     @Override
     public String toString() {
         return "EncryptedArchive{" +
                 "zipArchive=" + zipArchive +
-                ", encryptedArchivePath=" + encryptedArchivePath +
+                ", path=" + path +
                 '}';
     }
 }

@@ -1,7 +1,7 @@
 ----------------------------------------------------------------------
 openssl command line - decrypt files
 ----------------------------------------------------------------------
-File encypthed with this tool can be decypted with openssl command.
+File encrypted with this tool can be decypted with openssl command.
 Example:
 	openssl enc -d -aes-256-cbc -md md5 -in 2016_01Styczen.zip_enc -out 2016_01Styczen.zip_dec -k 1234567890
     where:
