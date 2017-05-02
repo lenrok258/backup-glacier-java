@@ -17,17 +17,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-public class GlacierService {
+public class GlacierUploadService {
 
     private final AmazonGlacier glacier;
     private final String vaultName;
-    private final String filenameAwsArchiveInfo;
+    private final GlacierArchiveInfoService glacierArchiveInfoService;
 
-    public GlacierService(String accessKey, String secretKey, String region,
-                          String vaultName, String filenameAwsArchiveInfo) {
+    public GlacierUploadService(String accessKey, String secretKey, String region,
+                                String vaultName, String filenameAwsArchiveInfo) {
         this.vaultName = vaultName;
-        this.filenameAwsArchiveInfo = filenameAwsArchiveInfo;
-        glacier = buildGlacierClient(accessKey, secretKey, region);
+        this.glacier = buildGlacierClient(accessKey, secretKey, region);
+        glacierArchiveInfoService = new GlacierArchiveInfoService(filenameAwsArchiveInfo);
     }
 
     public void uploadAll(List<EncryptedArchive> encryptedArchives) {

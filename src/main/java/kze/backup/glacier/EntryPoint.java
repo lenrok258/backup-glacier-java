@@ -1,6 +1,6 @@
 package kze.backup.glacier;
 
-import kze.backup.glacier.aws.GlacierService;
+import kze.backup.glacier.aws.GlacierUploadService;
 import kze.backup.glacier.encrypt.EncryptService;
 import kze.backup.glacier.encrypt.EncryptedArchive;
 import kze.backup.glacier.encrypt.VerifierService;
@@ -57,12 +57,12 @@ public class EntryPoint {
         verifierService.verifyAll(arguments.getEncryptionPassword(), encArchives);
 
         // Upload to AWS Glacier
-        GlacierService glacierService = new GlacierService(arguments.getAwsAccessKeyId(),
+        GlacierUploadService glacierUploadService = new GlacierUploadService(arguments.getAwsAccessKeyId(),
                 arguments.getAwsSecretAccessKey(),
                 arguments.getAwsRegion(),
                 arguments.getAwsGlacierVaultName(),
                 FILENAME_AWS_ARCHIVE_INFO);
-        glacierService.uploadAll(encArchives);
+        glacierUploadService.uploadAll(encArchives);
 
         // Clean up
         FileUtils.forceDelete(outputPath.toFile());
