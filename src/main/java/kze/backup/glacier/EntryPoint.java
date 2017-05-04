@@ -1,12 +1,8 @@
 package kze.backup.glacier;
 
-import kze.backup.glacier.aws.GlacierUploadService;
-import kze.backup.glacier.encrypt.EncryptService;
-import kze.backup.glacier.encrypt.EncryptedArchive;
-import kze.backup.glacier.encrypt.VerifierService;
-import kze.backup.glacier.zip.ZipArchive;
-import kze.backup.glacier.zip.ZipService;
-import org.apache.commons.io.FileUtils;
+import static kze.backup.glacier.Logger.error;
+import static kze.backup.glacier.Logger.info;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -15,14 +11,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static kze.backup.glacier.Logger.error;
-import static kze.backup.glacier.Logger.info;
-import static org.apache.commons.collections4.CollectionUtils.isEmpty;
+import org.apache.commons.io.FileUtils;
+
+import kze.backup.glacier.aws.GlacierUploadService;
+import kze.backup.glacier.encrypt.EncryptService;
+import kze.backup.glacier.encrypt.EncryptedArchive;
+import kze.backup.glacier.encrypt.VerifierService;
+import kze.backup.glacier.zip.ZipArchive;
+import kze.backup.glacier.zip.ZipService;
 
 public class EntryPoint {
-
-    public static final String FILENAME_AWS_ARCHIVE_INFO = "aws-archive-info.json";
-    public static final String DIR_NAME_OUTPUT = "output";
 
     public static void main(String[] args) throws IOException {
         info("Started");
@@ -36,8 +34,7 @@ public class EntryPoint {
         // Compute paths to backup
         List<Path> pathsToBackup = new DirectoriesToBackup(
                 arguments.getInputDirectoryPath(),
-                arguments.getInputMonthsRange(),
-                FILENAME_AWS_ARCHIVE_INFO).getPathsList();
+                arguments.getInputMonthsRange()).getPathsList();
         if (isEmpty(pathsToBackup)) {
             info("Nothing to backup. Exiting.");
             System.exit(0);
@@ -60,8 +57,7 @@ public class EntryPoint {
         GlacierUploadService glacierUploadService = new GlacierUploadService(arguments.getAwsAccessKeyId(),
                 arguments.getAwsSecretAccessKey(),
                 arguments.getAwsRegion(),
-                arguments.getAwsGlacierVaultName(),
-                FILENAME_AWS_ARCHIVE_INFO);
+                arguments.getAwsGlacierVaultName());
         glacierUploadService.uploadAll(encArchives);
 
         // Clean up
@@ -72,7 +68,7 @@ public class EntryPoint {
     }
 
     private static Path prepareOutputDirectory(Path inputDirectoryPath) {
-        Path output = Paths.get(inputDirectoryPath.toAbsolutePath().toString(), DIR_NAME_OUTPUT);
+        Path output = Paths.get(inputDirectoryPath.toAbsolutePath().toString(), Config.DIR_NAME_OUTPUT);
         try {
             Files.createDirectory(output);
         } catch (FileAlreadyExistsException e) {

@@ -23,13 +23,12 @@ public class GlacierUploadService {
 
     private final AmazonGlacier glacier;
     private final String vaultName;
-    private final GlacierArchiveInfoService ArchiveInfoService;
+    private final GlacierArchiveInfoService archiveInfoService;
 
-    public GlacierUploadService(String accessKey, String secretKey, String region,
-                                String vaultName, String filenameAwsArchiveInfo) {
+    public GlacierUploadService(String accessKey, String secretKey, String region, String vaultName) {
         this.vaultName = vaultName;
         this.glacier = buildGlacierClient(accessKey, secretKey, region);
-        this.ArchiveInfoService = new GlacierArchiveInfoService(filenameAwsArchiveInfo, vaultName);
+        this.archiveInfoService = new GlacierArchiveInfoService(vaultName);
     }
 
     public List<GlacierArchive> uploadAll(List<EncryptedArchive> encryptedArchives) {
@@ -63,7 +62,7 @@ public class GlacierUploadService {
         String archiveId = glacierArchive.getUploadResult().getArchiveId();
         Path uploadedPath = glacierArchive.getEncryptedArchive().getPath();
         Logger.info("Archive id [%s] for file [%s]", archiveId, uploadedPath);
-        ArchiveInfoService.createInfoFile(glacierArchive);
+        archiveInfoService.createInfoFile(glacierArchive);
         return glacierArchive;
     }
 

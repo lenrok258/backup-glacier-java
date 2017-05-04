@@ -17,12 +17,10 @@ public class DirectoriesToBackup {
 
     private Path inputDirectoryPath;
     private String monthsRange;
-    private String filenameAwsArchiveInfo;
 
-    public DirectoriesToBackup(Path inputDirectoryPath, String monthsRange, String filenameAwsArchiveInfo) {
+    public DirectoriesToBackup(Path inputDirectoryPath, String monthsRange) {
         this.inputDirectoryPath = inputDirectoryPath;
         this.monthsRange = monthsRange;
-        this.filenameAwsArchiveInfo = filenameAwsArchiveInfo;
     }
 
     public List<Path> getPathsList() {
@@ -71,7 +69,7 @@ public class DirectoriesToBackup {
     }
 
     private boolean notYetBackedUp(File dir) {
-        Path backupInfoFilePath = Paths.get(dir.getAbsolutePath(), filenameAwsArchiveInfo);
+        Path backupInfoFilePath = Paths.get(dir.getAbsolutePath(), Config.FILENAME_AWS_ARCHIVE_INFO);
         boolean notYetBackedUp = Files.notExists(backupInfoFilePath);
 
         if (!notYetBackedUp) {

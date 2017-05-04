@@ -2,16 +2,15 @@ package kze.backup.glacier.aws;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import kze.backup.glacier.Logger;
 
 public class GlacierArchiveInfoService {
 
     private final ObjectMapper objectMapper;
-    private final String filenameAwsArchiveInfo;
-    private String vaultName;
+    private final String vaultName;
 
-    public GlacierArchiveInfoService(String filenameAwsArchiveInfo, String vaultName) {
-        this.filenameAwsArchiveInfo = filenameAwsArchiveInfo;
+    public GlacierArchiveInfoService(String vaultName) {
         this.vaultName = vaultName;
         this.objectMapper = new ObjectMapper();
     }
@@ -28,6 +27,6 @@ public class GlacierArchiveInfoService {
     }
 
     private GlacierArchiveInfo map(GlacierArchive glacierArchive) {
-        return new GlacierArchiveInfo();
+        return null;
     }
 }
