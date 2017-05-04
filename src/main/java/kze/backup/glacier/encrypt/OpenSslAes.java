@@ -1,10 +1,8 @@
 package kze.backup.glacier.encrypt;
 
-import kze.backup.glacier.Logger;
+import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -15,8 +13,11 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
 
-import static java.nio.charset.StandardCharsets.US_ASCII;
-import static java.nio.charset.StandardCharsets.UTF_8;
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
+import kze.backup.glacier.Logger;
 
 /*
     Notes:
@@ -47,23 +48,8 @@ public class OpenSslAes {
         outputStream.write(SALTED_MAGIC);
         outputStream.write(salt);
 
-        int chunkSize = cipher.getBlockSize() * 8 * 1024 * 1024;
-        byte[] input = new byte[chunkSize];
-        int bytesRead;
         Logger.progressStart("Encrypting");
-        while ((bytesRead = inputStream.read(input, 0, input.length)) != -1) {
-            if (bytesRead < chunkSize) {
-                outputStream.write(cipher.doFinal(input, 0, bytesRead));
-            } else {
-                outputStream.write(cipher.update(input, 0, bytesRead));
-            }
-            Logger.progressContinue();
-        }
-        Logger.progressFinish();
-
-        inputStream.close();
-        outputStream.flush();
-        outputStream.close();
+        processStream(inputStream, outputStream, cipher);
     }
 
     public String decrypt(String password, String textToDecryptBase64) throws Exception {
@@ -88,24 +74,8 @@ public class OpenSslAes {
 
         // Decrypt
         final Cipher cipher = getCipher(password, saltValue, Cipher.DECRYPT_MODE);
-        int chunkSize = cipher.getBlockSize() * 8 * 1024 * 1024;
-        byte[] input = new byte[chunkSize];
-        int bytesRead;
         Logger.progressStart("Decrypting");
-        while ((bytesRead = inputStream.read(input, 0, input.length)) != -1) {
-            if (bytesRead < chunkSize) {
-                outputStream.write(cipher.doFinal(input, 0, bytesRead));
-            } else {
-                outputStream.write(cipher.update(input, 0, bytesRead));
-            }
-            Logger.progressContinue();
-        }
-        Logger.progressFinish();
-
-        // Cleanup
-        inputStream.close();
-        outputStream.flush();
-        outputStream.close();
+        processStream(inputStream, outputStream, cipher);
     }
 
     private byte[] generateKeyAnIV(byte[] passAndSalt) throws NoSuchAlgorithmException {
@@ -137,6 +107,25 @@ public class OpenSslAes {
         System.arraycopy(a, 0, c, 0, a.length);
         System.arraycopy(b, 0, c, a.length, b.length);
         return c;
+    }
+
+    private void processStream(InputStream inputStream, OutputStream outputStream, Cipher cipher) throws Exception {
+        int bytesRead;
+        int chunkSize = cipher.getBlockSize() * 8 * 1024 * 1024;
+        byte[] input = new byte[chunkSize];
+        while ((bytesRead = inputStream.read(input, 0, input.length)) != -1) {
+            if (bytesRead < chunkSize) {
+                outputStream.write(cipher.doFinal(input, 0, bytesRead));
+            } else {
+                outputStream.write(cipher.update(input, 0, bytesRead));
+            }
+            Logger.progressContinue();
+        }
+        Logger.progressFinish();
+
+        inputStream.close();
+        outputStream.flush();
+        outputStream.close();
     }
 
 }
