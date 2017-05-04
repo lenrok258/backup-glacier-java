@@ -17,25 +17,29 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+import static java.util.stream.Collectors.toList;
+
 public class GlacierUploadService {
 
     private final AmazonGlacier glacier;
     private final String vaultName;
-    private final GlacierArchiveInfoService glacierArchiveInfoService;
+    private final GlacierArchiveInfoService ArchiveInfoService;
 
     public GlacierUploadService(String accessKey, String secretKey, String region,
                                 String vaultName, String filenameAwsArchiveInfo) {
         this.vaultName = vaultName;
         this.glacier = buildGlacierClient(accessKey, secretKey, region);
-        glacierArchiveInfoService = new GlacierArchiveInfoService(filenameAwsArchiveInfo);
+        this.ArchiveInfoService = new GlacierArchiveInfoService(filenameAwsArchiveInfo, vaultName);
     }
 
-    public void uploadAll(List<EncryptedArchive> encryptedArchives) {
-        encryptedArchives.stream()
-                .forEach(this::upload);
+    public List<GlacierArchive> uploadAll(List<EncryptedArchive> encryptedArchives) {
+        return encryptedArchives.stream()
+                .map(this::upload)
+                .map(this::createInfoFile)
+                .collect(toList());
     }
 
-    private void upload(EncryptedArchive encryptedArchive) {
+    private GlacierArchive upload(EncryptedArchive encryptedArchive) {
         Path pathToUpload = encryptedArchive.getPath();
         try {
             ArchiveTransferManager transferManager = buildTransferManager();
@@ -47,13 +51,20 @@ public class GlacierUploadService {
                     encryptedArchive.computeDescription(),
                     pathToUpload.toFile(),
                     progressListener);
-            String archiveId = result.getArchiveId();
-            Logger.info("Archive id [%s] for file [%s]", archiveId, pathToUpload);
-            // TODO: Save archiveId as JSON in source directory
+            return new GlacierArchive(encryptedArchive, result);
         } catch (Exception e) {
             Logger.error("Uploading file [%s] failed", e, pathToUpload);
             System.exit(-1);
         }
+        return null;
+    }
+
+    private GlacierArchive createInfoFile(GlacierArchive glacierArchive) {
+        String archiveId = glacierArchive.getUploadResult().getArchiveId();
+        Path uploadedPath = glacierArchive.getEncryptedArchive().getPath();
+        Logger.info("Archive id [%s] for file [%s]", archiveId, uploadedPath);
+        ArchiveInfoService.createInfoFile(glacierArchive);
+        return glacierArchive;
     }
 
     private AmazonGlacier buildGlacierClient(String accessKey, String secretKey, String region) {
