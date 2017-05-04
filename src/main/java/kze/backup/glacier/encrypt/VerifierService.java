@@ -1,6 +1,7 @@
 package kze.backup.glacier.encrypt;
 
-import org.apache.commons.codec.digest.DigestUtils;
+import static kze.backup.glacier.Logger.error;
+import static kze.backup.glacier.Logger.info;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -9,7 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static kze.backup.glacier.Logger.*;
+import kze.backup.glacier.MD5;
 
 public class VerifierService {
 
@@ -51,21 +52,11 @@ public class VerifierService {
     }
 
     private boolean checkIfTheSame(Path zipPath, Path decPath) {
-        String zipMD5 = digestFileMD5(zipPath);
+        String zipMD5 = MD5.digest(zipPath);
         info("MD5=[%s], File=[%s]", zipMD5, zipPath);
-        String decMD5 = digestFileMD5(decPath);
+        String decMD5 = MD5.digest(decPath);
         info("MD5=[%s], File=[%s]", decMD5, decPath);
         return zipMD5.equals(decMD5);
-    }
-
-    private String digestFileMD5(Path filePath) {
-        try (InputStream inputStream = Files.newInputStream(filePath)) {
-            return DigestUtils.md5Hex(inputStream);
-        } catch (Exception e) {
-            error("Unable to read file=[%s]", e, filePath);
-            System.exit(-1);
-        }
-        return "";
     }
 
 }

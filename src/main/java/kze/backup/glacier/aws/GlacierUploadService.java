@@ -90,6 +90,4 @@ public class GlacierUploadService {
             Logger.info("Glacier progress %s % [%s]", percentage, eventType);
         };
     }
-
-
 }

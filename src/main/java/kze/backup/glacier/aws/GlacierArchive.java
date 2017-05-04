@@ -1,6 +1,7 @@
 package kze.backup.glacier.aws;
 
 import com.amazonaws.services.glacier.transfer.UploadResult;
+
 import kze.backup.glacier.encrypt.EncryptedArchive;
 
 public class GlacierArchive {
@@ -19,5 +20,13 @@ public class GlacierArchive {
 
     public UploadResult getUploadResult() {
         return uploadResult;
+    }
+
+    @Override
+    public String toString() {
+        return "GlacierArchive{" +
+                "encryptedArchive=" + encryptedArchive +
+                ", uploadResult=" + uploadResult +
+                '}';
     }
 }
