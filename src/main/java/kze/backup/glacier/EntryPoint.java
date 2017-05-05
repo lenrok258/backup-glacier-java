@@ -24,18 +24,19 @@ import kze.backup.glacier.zip.ZipService;
 
 public class EntryPoint {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] cmdLineArgs) throws IOException {
         info("Started");
 
         // Arguments
-        EntryPointArgs arguments = new EntryPointArgsService(args).parse();
-        Path inputDir = Paths.get(arguments.getInputDirectoryPath());
+        EntryPointArgs args = new EntryPointArgsService(cmdLineArgs).parse();
+        info("Program args: [%s]", args);
+        Path inputDir = Paths.get(args.getInputDirectoryPath());
 
         // Output path
         Path outputPath = prepareOutputDirectory(inputDir);
 
         // Compute paths to backup
-        DirectoriesToBackup directoriesToBackup = new DirectoriesToBackup(inputDir, arguments.getInputMonthsRange());
+        DirectoriesToBackup directoriesToBackup = new DirectoriesToBackup(inputDir, args.getInputMonthsRange());
         List<Path> pathsToBackup = directoriesToBackup.getPathsList();
         if (isEmpty(pathsToBackup)) {
             info("Nothing to backup. Exiting.");
@@ -49,17 +50,17 @@ public class EntryPoint {
         // Encrypt
         EncryptService encryptService = new EncryptService();
         List<EncryptedArchive> encArchives = encryptService.encZipArchives(
-                arguments.getEncryptionPassword(), zipArchives);
+                args.getEncryptionPassword(), zipArchives);
 
         // Verify encrypted files
         VerifierService verifierService = new VerifierService();
-        verifierService.verifyAll(arguments.getEncryptionPassword(), encArchives);
+        verifierService.verifyAll(args.getEncryptionPassword(), encArchives);
 
         // Upload to AWS Glacier
-        GlacierUploadService glacierUploadService = new GlacierUploadService(arguments.getAwsAccessKeyId(),
-                arguments.getAwsSecretAccessKey(),
-                arguments.getAwsRegion(),
-                arguments.getAwsGlacierVaultName());
+        GlacierUploadService glacierUploadService = new GlacierUploadService(args.getAwsAccessKeyId(),
+                args.getAwsSecretAccessKey(),
+                args.getAwsRegion(),
+                args.getAwsGlacierVaultName());
         glacierUploadService.uploadAll(encArchives);
 
         // Clean up

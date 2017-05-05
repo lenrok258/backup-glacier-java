@@ -22,18 +22,26 @@ import com.amazonaws.services.glacier.transfer.ArchiveTransferManager;
 import com.amazonaws.services.glacier.transfer.ArchiveTransferManagerBuilder;
 import com.amazonaws.services.glacier.transfer.UploadResult;
 
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
+import com.amazonaws.services.sqs.AmazonSQS;
+import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import kze.backup.glacier.Logger;
 import kze.backup.glacier.encrypt.EncryptedArchive;
 
 public class GlacierUploadService {
 
     private final AmazonGlacier glacier;
+    private final AmazonSQS sqs;
+    private final AmazonSNS sns;
     private final String vaultName;
     private final GlacierArchiveInfoService archiveInfoService;
 
     public GlacierUploadService(String accessKey, String secretKey, String region, String vaultName) {
         this.vaultName = vaultName;
         this.glacier = buildGlacierClient(accessKey, secretKey, region);
+        this.sqs = buildSqsClient(accessKey, secretKey, region);
+        this.sns = buildSnsClient(accessKey, secretKey, region);
         this.archiveInfoService = new GlacierArchiveInfoService(vaultName);
     }
 
@@ -82,9 +90,29 @@ public class GlacierUploadService {
                 .build();
     }
 
+    private AmazonSQS buildSqsClient(String accessKey, String secretKey, String region) {
+        BasicAWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
+        AWSStaticCredentialsProvider credentialsProvider = new AWSStaticCredentialsProvider(credentials);
+        return AmazonSQSClientBuilder.standard()
+                .withCredentials(credentialsProvider)
+                .withRegion(region)
+                .build();
+    }
+
+    private AmazonSNS buildSnsClient(String accessKey, String secretKey, String region) {
+        BasicAWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
+        AWSStaticCredentialsProvider credentialsProvider = new AWSStaticCredentialsProvider(credentials);
+        return AmazonSNSClientBuilder.standard()
+                .withCredentials(credentialsProvider)
+                .withRegion(region)
+                .build();
+    }
+
     private ArchiveTransferManager buildTransferManager() {
         return new ArchiveTransferManagerBuilder()
                 .withGlacierClient(glacier)
+                .withSqsClient(sqs)
+                .withSnsClient(sns)
                 .build();
     }
 
