@@ -1,23 +1,28 @@
 package kze.backup.glacier.aws;
 
+import static java.util.stream.Collectors.toList;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.event.ProgressEventType;
 import com.amazonaws.event.ProgressListener;
 import com.amazonaws.services.glacier.AmazonGlacier;
 import com.amazonaws.services.glacier.AmazonGlacierClientBuilder;
+import com.amazonaws.services.glacier.model.DataRetrievalPolicy;
+import com.amazonaws.services.glacier.model.DataRetrievalRule;
+import com.amazonaws.services.glacier.model.SetDataRetrievalPolicyRequest;
 import com.amazonaws.services.glacier.transfer.ArchiveTransferManager;
 import com.amazonaws.services.glacier.transfer.ArchiveTransferManagerBuilder;
 import com.amazonaws.services.glacier.transfer.UploadResult;
+
 import kze.backup.glacier.Logger;
 import kze.backup.glacier.encrypt.EncryptedArchive;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 public class GlacierUploadService {
 
@@ -32,6 +37,7 @@ public class GlacierUploadService {
     }
 
     public List<GlacierArchive> uploadAll(List<EncryptedArchive> encryptedArchives) {
+        setDataRetrievalPolicyToFreeTierOnly();
         return encryptedArchives.stream()
                 .map(this::upload)
                 .map(this::createInfoFile)
@@ -89,5 +95,19 @@ public class GlacierUploadService {
             ProgressEventType eventType = progressEvent.getEventType();
             Logger.info("Glacier progress %s % [%s]", percentage, eventType);
         };
+    }
+
+    private void setDataRetrievalPolicyToFreeTierOnly() {
+        DataRetrievalRule rule = new DataRetrievalRule();
+        rule.setStrategy("FreeTier");
+
+        DataRetrievalPolicy policy = new DataRetrievalPolicy();
+        policy.setRules(Arrays.asList(rule));
+
+        SetDataRetrievalPolicyRequest request = new SetDataRetrievalPolicyRequest();
+        request.setAccountId("-");
+        request.setPolicy(policy);
+
+        glacier.setDataRetrievalPolicy(request)
     }
 }
