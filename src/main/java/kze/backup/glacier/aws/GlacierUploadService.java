@@ -108,6 +108,6 @@ public class GlacierUploadService {
         request.setAccountId("-");
         request.setPolicy(policy);
 
-        glacier.setDataRetrievalPolicy(request)
+        glacier.setDataRetrievalPolicy(request);
     }
 }
