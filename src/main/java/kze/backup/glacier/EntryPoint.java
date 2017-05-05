@@ -14,7 +14,8 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 
 import kze.backup.glacier.aws.GlacierUploadService;
-import kze.backup.glacier.cmdargs.CommandLineArgsService;
+import kze.backup.glacier.cmdargs.EntryPointArgs;
+import kze.backup.glacier.cmdargs.EntryPointArgsService;
 import kze.backup.glacier.encrypt.EncryptService;
 import kze.backup.glacier.encrypt.EncryptedArchive;
 import kze.backup.glacier.encrypt.VerifierService;
@@ -27,15 +28,15 @@ public class EntryPoint {
         info("Started");
 
         // Arguments
-        CommandLineArgsService arguments = new CommandLineArgsService(args);
+        EntryPointArgs arguments = new EntryPointArgsService(args).parse();
+        Path inputDir = Paths.get(arguments.getInputDirectoryPath());
 
         // Output path
-        Path outputPath = prepareOutputDirectory(arguments.getInputDirectoryPath());
+        Path outputPath = prepareOutputDirectory(inputDir);
 
         // Compute paths to backup
-        List<Path> pathsToBackup = new DirectoriesToBackup(
-                arguments.getInputDirectoryPath(),
-                arguments.getInputMonthsRange()).getPathsList();
+        DirectoriesToBackup directoriesToBackup = new DirectoriesToBackup(inputDir, arguments.getInputMonthsRange());
+        List<Path> pathsToBackup = directoriesToBackup.getPathsList();
         if (isEmpty(pathsToBackup)) {
             info("Nothing to backup. Exiting.");
             System.exit(0);
