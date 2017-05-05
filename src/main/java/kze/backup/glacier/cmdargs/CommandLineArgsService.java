@@ -1,4 +1,4 @@
-package kze.backup.glacier;
+package kze.backup.glacier.cmdargs;
 
 import java.io.Console;
 import java.nio.file.Files;
@@ -9,7 +9,13 @@ import static java.text.MessageFormat.format;
 import static kze.backup.glacier.Logger.info;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-public class EntryPointArgumentParser {
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.ParserProperties;
+
+import kze.backup.glacier.Logger;
+
+public class CommandLineArgsService {
 
     private Path inputDirectoryPath;
     private String inputMonthsRange;
@@ -19,7 +25,7 @@ public class EntryPointArgumentParser {
     private String awsSecretAccessKey;
     private String encryptionPassword;
 
-    public EntryPointArgumentParser(String[] cmdLineArgs) {
+    public CommandLineArgsService(String[] cmdLineArgs) {
         parseCmdLineArgs(cmdLineArgs);
         askUserForSecrets();
         info(this);
@@ -105,5 +111,23 @@ public class EntryPointArgumentParser {
     private void exitWithErrorMessage(String errorMessage) {
         Logger.error(errorMessage);
         System.exit(-1);
+    }
+
+    public static void main(String[] args) {
+        ParserProperties parserProperties = ParserProperties.defaults()
+                .withUsageWidth(200)
+                .withOptionValueDelimiter("=")
+                .withShowDefaults(true);
+        CommandLineArgs arguments = new CommandLineArgs();
+        CmdLineParser parser = new CmdLineParser(arguments, parserProperties);
+
+        try {
+            parser.parseArgument(args);
+        } catch (CmdLineException e) {
+            System.err.println(e.getLocalizedMessage());
+            System.err.println();
+            System.err.println("Options:");
+            parser.printUsage(System.err);
+        }
     }
 }

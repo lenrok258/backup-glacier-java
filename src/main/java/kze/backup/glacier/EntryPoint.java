@@ -14,6 +14,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 
 import kze.backup.glacier.aws.GlacierUploadService;
+import kze.backup.glacier.cmdargs.CommandLineArgsService;
 import kze.backup.glacier.encrypt.EncryptService;
 import kze.backup.glacier.encrypt.EncryptedArchive;
 import kze.backup.glacier.encrypt.VerifierService;
@@ -26,7 +27,7 @@ public class EntryPoint {
         info("Started");
 
         // Arguments
-        EntryPointArgumentParser arguments = new EntryPointArgumentParser(args);
+        CommandLineArgsService arguments = new CommandLineArgsService(args);
 
         // Output path
         Path outputPath = prepareOutputDirectory(arguments.getInputDirectoryPath());
