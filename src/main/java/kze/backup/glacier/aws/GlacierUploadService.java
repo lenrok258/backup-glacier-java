@@ -1,6 +1,7 @@
 package kze.backup.glacier.aws;
 
 import static java.util.stream.Collectors.toList;
+import static kze.backup.glacier.Logger.info;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -49,7 +50,7 @@ public class GlacierUploadService {
         try {
             ArchiveTransferManager transferManager = buildTransferManager();
             ProgressListener progressListener = getProgressListener(encryptedArchive);
-            Logger.info("About to upload [%s]", pathToUpload);
+            info("About to upload [%s]", pathToUpload);
             UploadResult result = transferManager.upload(
                     "-",
                     vaultName,
@@ -67,7 +68,7 @@ public class GlacierUploadService {
     private GlacierArchive createInfoFile(GlacierArchive glacierArchive) {
         String archiveId = glacierArchive.getUploadResult().getArchiveId();
         Path uploadedPath = glacierArchive.getEncryptedArchive().getPath();
-        Logger.info("Archive id [%s] for file [%s]", archiveId, uploadedPath);
+        info("Archive id [%s] for file [%s]", archiveId, uploadedPath);
         archiveInfoService.createInfoFile(glacierArchive);
         return glacierArchive;
     }
@@ -93,11 +94,12 @@ public class GlacierUploadService {
             long bytesTransferred = progressEvent.getBytesTransferred();
             float percentage = ((float) bytesTransferred / (float) sizeTotal) * 100.0f;
             ProgressEventType eventType = progressEvent.getEventType();
-            Logger.info("Glacier progress %s % [%s]", percentage, eventType);
+            info("Glacier progress %s % [%s]", percentage, eventType);
         };
     }
 
     private void setDataRetrievalPolicyToFreeTierOnly() {
+        info("Setting up AWS Glacier retrieval data policy to free tier only");
         DataRetrievalRule rule = new DataRetrievalRule();
         rule.setStrategy("FreeTier");
 
@@ -109,5 +111,6 @@ public class GlacierUploadService {
         request.setPolicy(policy);
 
         glacier.setDataRetrievalPolicy(request);
+        info("Data policy set correctly");
     }
 }
