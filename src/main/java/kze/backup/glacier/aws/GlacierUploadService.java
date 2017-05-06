@@ -1,39 +1,41 @@
 package kze.backup.glacier.aws;
 
-import static java.util.stream.Collectors.toList;
-import static kze.backup.glacier.Logger.info;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
-
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.event.ProgressEventType;
 import com.amazonaws.event.ProgressListener;
 import com.amazonaws.services.glacier.AmazonGlacier;
 import com.amazonaws.services.glacier.AmazonGlacierClientBuilder;
-import com.amazonaws.services.glacier.model.DataRetrievalPolicy;
-import com.amazonaws.services.glacier.model.DataRetrievalRule;
-import com.amazonaws.services.glacier.model.SetDataRetrievalPolicyRequest;
+import com.amazonaws.services.glacier.model.*;
 import com.amazonaws.services.glacier.transfer.ArchiveTransferManager;
 import com.amazonaws.services.glacier.transfer.ArchiveTransferManagerBuilder;
 import com.amazonaws.services.glacier.transfer.UploadResult;
-
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import kze.backup.glacier.Logger;
 import kze.backup.glacier.encrypt.EncryptedArchive;
+import org.apache.commons.io.IOUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
+import static kze.backup.glacier.Logger.info;
 
 public class GlacierUploadService {
 
     private final AmazonGlacier glacier;
     private final AmazonSQS sqs;
     private final AmazonSNS sns;
+    private final ArchiveTransferManager transferManager;
     private final String vaultName;
     private final GlacierArchiveInfoService archiveInfoService;
 
@@ -42,6 +44,7 @@ public class GlacierUploadService {
         this.glacier = buildGlacierClient(accessKey, secretKey, region);
         this.sqs = buildSqsClient(accessKey, secretKey, region);
         this.sns = buildSnsClient(accessKey, secretKey, region);
+        this.transferManager = buildTransferManager();
         this.archiveInfoService = new GlacierArchiveInfoService(vaultName);
     }
 
@@ -56,7 +59,6 @@ public class GlacierUploadService {
     private GlacierArchive upload(EncryptedArchive encryptedArchive) {
         Path pathToUpload = encryptedArchive.getPath();
         try {
-            ArchiveTransferManager transferManager = buildTransferManager();
             ProgressListener progressListener = getProgressListener(encryptedArchive);
             info("About to upload [%s]", pathToUpload);
             UploadResult result = transferManager.upload(
@@ -140,5 +142,86 @@ public class GlacierUploadService {
 
         glacier.setDataRetrievalPolicy(request);
         info("Data policy set correctly");
+    }
+
+    /* **************************************************************
+     * TEST AREA
+     */
+
+    private void printVault() {
+        DescribeVaultRequest request = new DescribeVaultRequest("-", vaultName);
+        DescribeVaultResult response = glacier.describeVault(request);
+        System.out.println(response);
+    }
+
+    private void initJob() {
+        JobParameters jobParameters = new JobParameters()
+                .withArchiveId("vRcK-DwsZoymLL9JFhi4qz_5Veawmx-vsD8nPC2THcicCk_kdq4WdD5taaMz7QWCjEVQFjuoSD0YJq90CbDnyeF2NBcu3_0mm96asiMme6ZqGc9gjxVpF0HR6f0SKYj-Ub0b8Ov5Cg")
+                .withType("archive-retrieval");
+        InitiateJobRequest request = new InitiateJobRequest("-", vaultName, jobParameters);
+        InitiateJobResult response = glacier.initiateJob(request);
+        System.out.println(response);
+    }
+
+    private void checkJobStatus() {
+        String jobId = "yALwyLgcISDPByNQjxNXrsPUP033h1jpSqDXGKIdB7gZZnoij5_6yerumCIccyZ_wM0pcKn1lRQkyCW2ek9RODHaz1uR";
+        DescribeJobRequest request = new DescribeJobRequest("-", vaultName, jobId);
+        DescribeJobResult response = glacier.describeJob(request);
+        System.out.println(response);
+    }
+
+    public void listArchives() {
+        InitiateJobRequest request = new InitiateJobRequest();
+        request.setAccountId("-");
+        request.setVaultName(vaultName);
+        JobParameters jobParameters = new JobParameters();
+        jobParameters.setType("inventory-retrieval");
+        jobParameters.setFormat("JSON");
+        request.setJobParameters(jobParameters);
+        InitiateJobResult response = glacier.initiateJob(request);
+        System.out.println(response);
+
+        // JOBID: yALwyLgcISDPByNQjxNXrsPUP033h1jpSqDXGKIdB7gZZnoij5_6yerumCIccyZ_wM0pcKn1lRQkyCW2ek9RODHaz1uR
+    }
+
+    private void downloadArchive() {
+        String jobId = "dz9p5wDGdwLSPjGGI8ZGiZzrBPb1_ZODBdzcoCfqnSwEauVIwWMzko_royA_nZjZ1r4-bnrrimaleo2wepn6mnN0r_XX";
+
+        transferManager.downloadJobOutput(
+                "-",
+                vaultName,
+                jobId,
+                new File("/home/kornel/temp/test.zip_enc"));
+    }
+
+    public void getJobResult() throws IOException {
+        String jobId = "dz9p5wDGdwLSPjGGI8ZGiZzrBPb1_ZODBdzcoCfqnSwEauVIwWMzko_royA_nZjZ1r4-bnrrimaleo2wepn6mnN0r_XX";
+        GetJobOutputRequest request = new GetJobOutputRequest();
+        request.setAccountId("-");
+        request.setJobId(jobId);
+        request.setVaultName(vaultName);
+        GetJobOutputResult response = glacier.getJobOutput(request);
+        System.out.println(response);
+
+        InputStream body = response.getBody();
+        String bodyString = IOUtils.toString(body, StandardCharsets.UTF_8.toString());
+        System.out.println(bodyString);
+    }
+
+    public static void main(String[] args) throws IOException {
+        GlacierUploadService service = new GlacierUploadService(
+                "",
+                "",
+                "us-west-2",
+                "test-vault");
+//        service.printVault();
+//        service.initJob();
+//        service.checkJobStatus();
+//        service.downloadArchive();
+//        service.listArchives();
+        service.checkJobStatus();
+//        service.getJobResult();
+
+
     }
 }
