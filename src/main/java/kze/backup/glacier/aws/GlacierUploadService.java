@@ -164,7 +164,7 @@ public class GlacierUploadService {
     }
 
     private void checkJobStatus() {
-        String jobId = "yALwyLgcISDPByNQjxNXrsPUP033h1jpSqDXGKIdB7gZZnoij5_6yerumCIccyZ_wM0pcKn1lRQkyCW2ek9RODHaz1uR";
+        String jobId = "mO4ouEYoHB8O-U8jWFmT_znqgLCQWY4IqL7PBgEBrGEKYuo-E11hO1kZ9ZRlHP1JrdPsaTYdfmqvwADTGZgz0toleEmB";
         DescribeJobRequest request = new DescribeJobRequest("-", vaultName, jobId);
         DescribeJobResult response = glacier.describeJob(request);
         System.out.println(response);
@@ -181,7 +181,7 @@ public class GlacierUploadService {
         InitiateJobResult response = glacier.initiateJob(request);
         System.out.println(response);
 
-        // JOBID: yALwyLgcISDPByNQjxNXrsPUP033h1jpSqDXGKIdB7gZZnoij5_6yerumCIccyZ_wM0pcKn1lRQkyCW2ek9RODHaz1uR
+        // JOBID: mO4ouEYoHB8O-U8jWFmT_znqgLCQWY4IqL7PBgEBrGEKYuo-E11hO1kZ9ZRlHP1JrdPsaTYdfmqvwADTGZgz0toleEmB
     }
 
     private void downloadArchive() {
@@ -195,7 +195,7 @@ public class GlacierUploadService {
     }
 
     public void getJobResult() throws IOException {
-        String jobId = "dz9p5wDGdwLSPjGGI8ZGiZzrBPb1_ZODBdzcoCfqnSwEauVIwWMzko_royA_nZjZ1r4-bnrrimaleo2wepn6mnN0r_XX";
+        String jobId = "mO4ouEYoHB8O-U8jWFmT_znqgLCQWY4IqL7PBgEBrGEKYuo-E11hO1kZ9ZRlHP1JrdPsaTYdfmqvwADTGZgz0toleEmB";
         GetJobOutputRequest request = new GetJobOutputRequest();
         request.setAccountId("-");
         request.setJobId(jobId);
@@ -206,6 +206,18 @@ public class GlacierUploadService {
         InputStream body = response.getBody();
         String bodyString = IOUtils.toString(body, StandardCharsets.UTF_8.toString());
         System.out.println(bodyString);
+    }
+
+    private void deleteArchives() {
+        Arrays.asList(
+                "")
+                .stream()
+                .forEach(id -> {
+                    DeleteArchiveRequest request = new DeleteArchiveRequest("-", vaultName, id);
+                    DeleteArchiveResult response = glacier.deleteArchive(request);
+                    System.out.println(response);
+                    System.out.println("-----------------------------------------------------------------------------");
+                });
     }
 
     public static void main(String[] args) throws IOException {
@@ -221,7 +233,7 @@ public class GlacierUploadService {
 //        service.listArchives();
         service.checkJobStatus();
 //        service.getJobResult();
-
+//        service.deleteArchives();
 
     }
 }
