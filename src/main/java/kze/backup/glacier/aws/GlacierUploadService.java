@@ -1,12 +1,37 @@
 package kze.backup.glacier.aws;
 
+import static java.util.stream.Collectors.toList;
+import static kze.backup.glacier.Logger.info;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.commons.io.IOUtils;
+
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.event.ProgressEventType;
 import com.amazonaws.event.ProgressListener;
 import com.amazonaws.services.glacier.AmazonGlacier;
 import com.amazonaws.services.glacier.AmazonGlacierClientBuilder;
-import com.amazonaws.services.glacier.model.*;
+import com.amazonaws.services.glacier.model.DataRetrievalPolicy;
+import com.amazonaws.services.glacier.model.DataRetrievalRule;
+import com.amazonaws.services.glacier.model.DeleteArchiveRequest;
+import com.amazonaws.services.glacier.model.DeleteArchiveResult;
+import com.amazonaws.services.glacier.model.DescribeJobRequest;
+import com.amazonaws.services.glacier.model.DescribeJobResult;
+import com.amazonaws.services.glacier.model.DescribeVaultRequest;
+import com.amazonaws.services.glacier.model.DescribeVaultResult;
+import com.amazonaws.services.glacier.model.GetJobOutputRequest;
+import com.amazonaws.services.glacier.model.GetJobOutputResult;
+import com.amazonaws.services.glacier.model.InitiateJobRequest;
+import com.amazonaws.services.glacier.model.InitiateJobResult;
+import com.amazonaws.services.glacier.model.JobParameters;
+import com.amazonaws.services.glacier.model.SetDataRetrievalPolicyRequest;
 import com.amazonaws.services.glacier.transfer.ArchiveTransferManager;
 import com.amazonaws.services.glacier.transfer.ArchiveTransferManagerBuilder;
 import com.amazonaws.services.glacier.transfer.UploadResult;
@@ -14,21 +39,9 @@ import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
+
 import kze.backup.glacier.Logger;
 import kze.backup.glacier.encrypt.EncryptedArchive;
-import org.apache.commons.io.IOUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
-
-import static java.util.stream.Collectors.toList;
-import static kze.backup.glacier.Logger.info;
 
 public class GlacierUploadService {
 
@@ -59,7 +72,7 @@ public class GlacierUploadService {
     private GlacierArchive upload(EncryptedArchive encryptedArchive) {
         Path pathToUpload = encryptedArchive.getPath();
         try {
-            ProgressListener progressListener = getProgressListener(encryptedArchive);
+            ProgressListener progressListener = new GlacierUploadProgressListener(encryptedArchive);
             info("About to upload [%s]", pathToUpload);
             UploadResult result = transferManager.upload(
                     "-",
@@ -116,16 +129,6 @@ public class GlacierUploadService {
                 .withSqsClient(sqs)
                 .withSnsClient(sns)
                 .build();
-    }
-
-    private ProgressListener getProgressListener(EncryptedArchive encryptedArchive) throws IOException {
-        long sizeTotal = Files.size(encryptedArchive.getPath());
-        return progressEvent -> {
-            long bytesTransferred = progressEvent.getBytesTransferred();
-            float percentage = ((float) bytesTransferred / (float) sizeTotal) * 100.0f;
-            ProgressEventType eventType = progressEvent.getEventType();
-            info("Glacier progress %s % [%s]", percentage, eventType);
-        };
     }
 
     private void setDataRetrievalPolicyToFreeTierOnly() {
@@ -231,7 +234,7 @@ public class GlacierUploadService {
 //        service.checkJobStatus();
 //        service.downloadArchive();
 //        service.listArchives();
-        service.checkJobStatus();
+//        service.checkJobStatus();
 //        service.getJobResult();
 //        service.deleteArchives();
 

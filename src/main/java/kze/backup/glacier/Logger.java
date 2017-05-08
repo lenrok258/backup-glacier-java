@@ -21,9 +21,9 @@ public class Logger {
         e.printStackTrace();
     }
 
-    public static void progress(String message, int current, int total) {
+    public static void progress(String message, long current, long total) {
         float percentage = (float) current / (float) total * 100;
-        String msg = formatMessage("PROGRESS", message + " (%s%%)                                        ", percentage);
+        String msg = formatMessage("PROGRESS", message + " (%.2f%%)", percentage);
         System.out.print("\r" + msg);
     }
 
@@ -36,14 +36,14 @@ public class Logger {
         return String.format(levelPrefixAndTime + message, ars);
     }
 
-//    public static void main(String[] args) throws InterruptedException {
-//        Logger.info("Start");
-//        for (int i = 0; i < 10; i++) {
-//            Logger.progress("Doing stuff:", 11 + i, 21);
-//            Thread.sleep(1000);
-//        }
-//        progressComplete();
-//        Logger.info("stop");
-//    }
+/*    public static void main(String[] args) throws InterruptedException {
+        Logger.info("Start");
+        for (int i = 0; i < 10; i++) {
+            Logger.progress("Doing stuff:", 12 + i, 21);
+            Thread.sleep(500);
+        }
+        progressComplete();
+        Logger.info("stop");
+    }*/
 
 }

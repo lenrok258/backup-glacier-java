@@ -2,6 +2,7 @@ package kze.backup.glacier.encrypt;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static kze.backup.glacier.Logger.info;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -115,7 +116,7 @@ public class OpenSslAes {
         int bytesRead = 0;
         int bytesReadChunk;
         int chunkSize = cipher.getBlockSize() * 1024 * 1024; // 16B * 1028B * 1028B =~ 16MB
-        Logger.info("Cypher chunk size %s Bytes", chunkSize);
+        info("Cipher chunk size %s Bytes", chunkSize);
         byte[] input = new byte[chunkSize];
         while ((bytesReadChunk = inputStream.read(input, 0, input.length)) != -1) {
             if (bytesReadChunk < chunkSize) {
