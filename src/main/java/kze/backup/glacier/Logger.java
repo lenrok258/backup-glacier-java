@@ -21,10 +21,11 @@ public class Logger {
         e.printStackTrace();
     }
 
-    public static void progress(String message, long current, long total) {
+    public static void progress(String message, long current, long total, Object... args) {
         float percentage = (float) current / (float) total * 100;
-        String msg = formatMessage("PROGRESS", message + " (%.2f%%)", percentage);
-        System.out.print("\r" + msg);
+        String messageFormatted = formatMessage("PROGRESS", message, args);
+        messageFormatted += String.format(" (%.2f%% :: %s of %s)", percentage, current, total);
+        System.out.print("\r" + messageFormatted);
     }
 
     public static void progressComplete() {
