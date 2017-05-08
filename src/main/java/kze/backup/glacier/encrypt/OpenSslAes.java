@@ -48,8 +48,7 @@ public class OpenSslAes {
         outputStream.write(SALTED_MAGIC);
         outputStream.write(salt);
 
-        Logger.progressStart("Encrypting");
-        processStream(inputStream, outputStream, cipher);
+        processStream(inputStream, outputStream, cipher, "Encrypting");
     }
 
     public String decrypt(String password, String textToDecryptBase64) throws Exception {
@@ -74,8 +73,7 @@ public class OpenSslAes {
 
         // Decrypt
         final Cipher cipher = getCipher(password, saltValue, Cipher.DECRYPT_MODE);
-        Logger.progressStart("Decrypting");
-        processStream(inputStream, outputStream, cipher);
+        processStream(inputStream, outputStream, cipher, "Decrypting");
     }
 
     private byte[] generateKeyAnIV(byte[] passAndSalt) throws NoSuchAlgorithmException {
@@ -109,19 +107,26 @@ public class OpenSslAes {
         return c;
     }
 
-    private void processStream(InputStream inputStream, OutputStream outputStream, Cipher cipher) throws Exception {
-        int bytesRead;
-        int chunkSize = cipher.getBlockSize() * 8 * 1024 * 1024;
+    private void processStream(InputStream inputStream,
+                               OutputStream outputStream,
+                               Cipher cipher,
+                               String logMessage) throws Exception {
+        int bytesTotal = inputStream.available();
+        int bytesRead = 0;
+        int bytesReadChunk;
+        int chunkSize = cipher.getBlockSize() * 1024 * 1024; // 16B * 1028B * 1028B =~ 16MB
+        Logger.info("Cypher chunk size %s Bytes", chunkSize);
         byte[] input = new byte[chunkSize];
-        while ((bytesRead = inputStream.read(input, 0, input.length)) != -1) {
-            if (bytesRead < chunkSize) {
-                outputStream.write(cipher.doFinal(input, 0, bytesRead));
+        while ((bytesReadChunk = inputStream.read(input, 0, input.length)) != -1) {
+            if (bytesReadChunk < chunkSize) {
+                outputStream.write(cipher.doFinal(input, 0, bytesReadChunk));
             } else {
-                outputStream.write(cipher.update(input, 0, bytesRead));
+                outputStream.write(cipher.update(input, 0, bytesReadChunk));
             }
-            Logger.progressContinue();
+            bytesRead += bytesReadChunk;
+            Logger.progress(logMessage, bytesRead, bytesTotal);
         }
-        Logger.progressFinish();
+        Logger.progressComplete();
 
         inputStream.close();
         outputStream.flush();
