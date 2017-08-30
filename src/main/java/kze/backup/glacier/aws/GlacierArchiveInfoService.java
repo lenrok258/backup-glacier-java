@@ -71,7 +71,6 @@ public class GlacierArchiveInfoService {
     }
 
     private void writeInfoBackupFile(GlacierArchive glacierArchive, String backupDirectory, String json) throws IOException {
-        String zipArchiveName = glacierArchive.getEncryptedArchive().getZipArchive().getZipPath().getFileName().toString();
         Path backupDirPath = Paths.get(backupDirectory);
         if (!backupDirPath.toFile().exists()) {
             try {
@@ -82,7 +81,9 @@ public class GlacierArchiveInfoService {
                 error("Unable to create output directory [%s]. Info files will not be backed-up", e, backupDirPath);
             }
         }
-        Path infoFileBackupPath = Paths.get(backupDirPath.toAbsolutePath().toString(), zipArchiveName + ".json");
+
+        String archiveFilename = glacierArchive.getEncryptedArchive().getPath().getFileName().toString();
+        Path infoFileBackupPath = Paths.get(backupDirPath.toAbsolutePath().toString(), archiveFilename + ".json");
         Files.write(infoFileBackupPath, json.getBytes(StandardCharsets.UTF_8));
         info("Info file *backup* created [%s]", infoFileBackupPath);
     }
