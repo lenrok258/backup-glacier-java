@@ -42,6 +42,7 @@ public class EntryPointArgsService {
         options.addRequiredOption("m", "months", true, "Months to backup (in format XX-XX)");
         options.addRequiredOption("r", "region", true, "AWS region");
         options.addRequiredOption("v", "vault", true, "AWS Glacier vault name");
+        options.addRequiredOption("b", "info-backup-path", true, "AWS Glacier archive info files backup directory");
 
         CommandLineParser parser = new DefaultParser();
         try {
@@ -50,6 +51,7 @@ public class EntryPointArgsService {
             args.inputMonthsRange = values.getOptionValue("m");
             args.awsRegion = values.getOptionValue("r");
             args.awsGlacierVaultName = values.getOptionValue("v");
+            args.awsArchiveInfoFileBackupPath = values.getOptionValue("b");
         } catch (ParseException e) {
             error(e.getMessage());
             printHelp(options);

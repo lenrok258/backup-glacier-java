@@ -4,3 +4,4 @@
 build/
 **/output/
 aws-archive-info.json
+test-info-files-backup/

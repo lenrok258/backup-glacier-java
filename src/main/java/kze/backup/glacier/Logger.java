@@ -37,14 +37,4 @@ public class Logger {
         return String.format(levelPrefixAndTime + message, ars);
     }
 
-/*    public static void main(String[] args) throws InterruptedException {
-        Logger.info("Start");
-        for (int i = 0; i < 10; i++) {
-            Logger.progress("Doing stuff:", 12 + i, 21);
-            Thread.sleep(500);
-        }
-        progressComplete();
-        Logger.info("stop");
-    }*/
-
 }

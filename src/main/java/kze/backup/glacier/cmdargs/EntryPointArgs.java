@@ -9,6 +9,7 @@ public class EntryPointArgs {
     String awsAccessKeyId;
     String awsSecretAccessKey;
     String encryptionPassword;
+    String awsArchiveInfoFileBackupPath;
 
     public String getInputDirectoryPath() {
         return inputDirectoryPath;
@@ -38,6 +39,10 @@ public class EntryPointArgs {
         return encryptionPassword;
     }
 
+    public String getAwsArchiveInfoFileBackupPath() {
+        return awsArchiveInfoFileBackupPath;
+    }
+
     @Override
     public String toString() {
         return "EntryPointArgs{" +
@@ -48,6 +53,7 @@ public class EntryPointArgs {
                 ", awsAccessKeyId='" + awsAccessKeyId + '\'' +
                 ", awsSecretAccessKey='" + awsSecretAccessKey + '\'' +
                 ", encryptionPassword='" + "**************" + '\'' +
+                ", awsArchiveInfoFileBackupPath='" + awsArchiveInfoFileBackupPath + '\'' +
                 '}';
     }
 }

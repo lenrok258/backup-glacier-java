@@ -52,13 +52,13 @@ public class GlacierUploadService {
     private final String vaultName;
     private final GlacierArchiveInfoService archiveInfoService;
 
-    public GlacierUploadService(String accessKey, String secretKey, String region, String vaultName) {
+    public GlacierUploadService(String accessKey, String secretKey, String region, String vaultName, String awsArchiveInfoFileBackupPath) {
         this.vaultName = vaultName;
         this.glacier = buildGlacierClient(accessKey, secretKey, region);
         this.sqs = buildSqsClient(accessKey, secretKey, region);
         this.sns = buildSnsClient(accessKey, secretKey, region);
         this.transferManager = buildTransferManager();
-        this.archiveInfoService = new GlacierArchiveInfoService(vaultName);
+        this.archiveInfoService = new GlacierArchiveInfoService(vaultName, awsArchiveInfoFileBackupPath);
     }
 
     public List<GlacierArchive> uploadAll(List<EncryptedArchive> encryptedArchives) {
@@ -228,7 +228,7 @@ public class GlacierUploadService {
                 "",
                 "",
                 "us-west-2",
-                "test-vault");
+                "test-vault", null);
 //        service.printVault();
 //        service.initJob();
 //        service.checkJobStatus();

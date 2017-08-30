@@ -57,10 +57,12 @@ public class EntryPoint {
         verifierService.verifyAll(args.getEncryptionPassword(), encArchives);
 
         // Upload to AWS Glacier
-        GlacierUploadService glacierUploadService = new GlacierUploadService(args.getAwsAccessKeyId(),
+        GlacierUploadService glacierUploadService = new GlacierUploadService(
+                args.getAwsAccessKeyId(),
                 args.getAwsSecretAccessKey(),
                 args.getAwsRegion(),
-                args.getAwsGlacierVaultName());
+                args.getAwsGlacierVaultName(),
+                args.getAwsArchiveInfoFileBackupPath());
         glacierUploadService.uploadAll(encArchives);
 
         // Clean up
