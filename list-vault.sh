@@ -15,6 +15,10 @@ printf "aws_secret: "
 read aws_secret
 printf "\n"
 
+region=eu-west-1
+# aws_key_id=
+# aws_secret=
+
 function initializeJob() {
     response=`env AWS_ACCESS_KEY_ID=$aws_key_id AWS_SECRET_ACCESS_KEY=$aws_secret aws --region $region \
         glacier initiate-job --vault-name photos --job-parameters '{"Type": "inventory-retrieval"}' --account-id -`
