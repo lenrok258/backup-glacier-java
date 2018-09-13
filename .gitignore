@@ -5,3 +5,9 @@ build/
 **/output/
 aws-archive-info.json
 test-info-files-backup/
+.classpath/
+.project/
+.settings/
+bin/
+.classpath
+.project
