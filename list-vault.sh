@@ -15,9 +15,10 @@ printf "aws_secret: "
 read aws_secret
 printf "\n"
 
-region=eu-west-1
-# aws_key_id=
-# aws_secret=
+region=us-west-2
+aws_key_id=
+aws_secret=
+
 
 function initializeJob() {
     response=`env AWS_ACCESS_KEY_ID=$aws_key_id AWS_SECRET_ACCESS_KEY=$aws_secret aws --region $region \
@@ -41,14 +42,14 @@ function printJobResult() {
 
     jobId=`cat list-vault-jobId.txt`
     response=`env AWS_ACCESS_KEY_ID=$aws_key_id AWS_SECRET_ACCESS_KEY=$aws_secret aws --region $region \
-        glacier get-job-output --vault-name photos --job-id $jobId --account-id - list-valut-result.txt 2>&1`
+        glacier get-job-output --vault-name photos --job-id $jobId --account-id - list-vault-result.json 2>&1`
 
     echo "get-job-output response:"
     echo $response
     echo 
 
     echo "result:"
-    cat list-valut-result.txt
+    cat list-vault-result.json
 }
 
 if [ ! -f './list-vault-jobId.txt' ]; then
