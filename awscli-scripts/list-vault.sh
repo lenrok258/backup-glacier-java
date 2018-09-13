@@ -15,7 +15,7 @@ printf "aws_secret: "
 read aws_secret
 printf "\n"
 
-region=us-west-2
+region=eu-west-1
 aws_key_id=
 aws_secret=
 
