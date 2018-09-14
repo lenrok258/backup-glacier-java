@@ -48,7 +48,7 @@ function printJobResult() {
 }
 
 if [ ! -f './list-vault-jobId.txt' ]; then
-    echo "list-vault-jobId.txt does not exits. About to initialize a job...";
+    echo "list-vault-jobId.txt does not exit. About to initialize a job...";
     initializeJob
 fi;
 
