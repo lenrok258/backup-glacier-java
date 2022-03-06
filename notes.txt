@@ -1,0 +1,3 @@
+./run.sh -b /home/kornel/Dropbox/aws-glacier-backup/ -i /home/kornel/mount/wd-2tb-kornel/Backup-rsync/photos/2021/ -m 07-12
+
+nload -u M -U M
