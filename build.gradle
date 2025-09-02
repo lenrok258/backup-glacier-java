@@ -23,7 +23,9 @@ dependencies {
 
 apply plugin: 'application'
 
-mainClassName = 'kze.backup.glacier.EntryPoint'
+application {
+    mainClass = 'kze.backup.glacier.EntryPoint'
+}
 
 run {
     // Enable std in
